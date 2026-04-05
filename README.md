@@ -34,10 +34,11 @@ An Express and PostgreSQL backend for the Zorvyn finance dashboard assignment. T
 ## Swagger Workflow
 
 1. Open `/docs`.
-2. Call `POST /auth/login` with a seeded user.
-3. Copy the returned bearer token into Swagger's `Authorize` dialog.
-4. Use the protected users, records, and dashboard routes based on that user's permissions.
-5. Call `GET /records/lookups` before creating or updating records so you can use valid category IDs.
+2. Call `POST /auth/login` with a seeded user email and password.
+3. Copy the returned JWT access token into Swagger's `Authorize` dialog.
+4. Paste only the token value there. Do not paste the password, and do not manually add `Bearer ` because Swagger does that for you.
+5. Use the protected users, records, and dashboard routes based on that user's permissions.
+6. Call `GET /records/lookups` before creating or updating records so you can use valid category IDs.
 
 ## Seeded Users
 
@@ -90,3 +91,6 @@ BCRYPT_ROUNDS=10
 - `npm run lint`
 - `npm run db:migrate`
 - `npm run db:seed`
+
+
+

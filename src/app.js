@@ -3,6 +3,8 @@ const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
+const { query } = require('./config/db');
+
 const docsRoutes = require('./docs/swagger.routes');
 const logger = require('./config/logger');
 const authRoutes = require('./modules/auth/auth.routes');
@@ -22,12 +24,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: logger.httpStream }));
 
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   void req;
-  res.status(200).json({
-    success: true,
-    message: 'Finance backend is healthy.',
-  });
+
+  try {
+    await query('SELECT 1');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Finance backend is healthy.',
+    });
+  } catch (error) {
+    logger.error('Health check failed.', error.message);
+
+    return res.status(503).json({
+      success: false,
+      message: 'Finance backend database is unavailable.',
+      code: 'DATABASE_UNAVAILABLE',
+    });
+  }
 });
 
 app.use('/docs', docsRoutes);
@@ -40,3 +55,5 @@ app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 module.exports = app;
+
+

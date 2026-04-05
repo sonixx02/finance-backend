@@ -3,7 +3,7 @@
   "info": {
     "title": "Finance Backend API",
     "version": "1.0.0",
-    "description": "Finance data processing and access control backend for the Zorvyn assignment."
+    "description": "Finance data processing and access control backend for the Zorvyn assignment. Use POST /auth/login with email and password first, then paste the returned JWT into Swagger Authorize. Do not paste the password there."
   },
   "servers": [
     {
@@ -27,7 +27,8 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "JWT",
+        "description": "Paste the JWT returned by POST /auth/login. Swagger adds the Bearer prefix automatically."
       }
     },
     "schemas": {
@@ -110,13 +111,17 @@
       "get": {
         "tags": ["Health"],
         "summary": "Health check",
-        "responses": { "200": { "description": "Service is healthy" } }
+        "responses": {
+          "200": { "description": "Service and database are healthy" },
+          "503": { "description": "Database is unavailable" }
+        }
       }
     },
     "/auth/login": {
       "post": {
         "tags": ["Auth"],
         "summary": "Authenticate and receive a JWT",
+        "description": "This route is public. Send email and password here, then use the returned access token in Swagger Authorize.",
         "requestBody": {
           "required": true,
           "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
@@ -328,3 +333,5 @@
     }
   }
 }
+
+
