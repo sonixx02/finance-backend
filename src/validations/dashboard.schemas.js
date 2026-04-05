@@ -9,6 +9,27 @@ const summaryQuerySchema = z.object({
   startDate: dateStringSchema.optional(),
 });
 
+const categoryTotalsQuerySchema = z.object({
+  endDate: dateStringSchema.optional(),
+  recordTypeCode: z.string().trim().min(2).max(50).optional(),
+  startDate: dateStringSchema.optional(),
+});
+
+const recentActivityQuerySchema = z.object({
+  endDate: dateStringSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+  startDate: dateStringSchema.optional(),
+});
+
+const trendsQuerySchema = z.object({
+  endDate: dateStringSchema.optional(),
+  granularity: z.enum(['week', 'month']).default('month'),
+  startDate: dateStringSchema.optional(),
+});
+
 module.exports = {
+  categoryTotalsQuerySchema,
+  recentActivityQuerySchema,
   summaryQuerySchema,
+  trendsQuerySchema,
 };

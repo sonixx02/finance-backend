@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const docsRoutes = require('./docs/swagger.routes');
 const logger = require('./config/logger');
 const authRoutes = require('./modules/auth/auth.routes');
+const usersRoutes = require('./modules/users/users.routes');
 const recordsRoutes = require('./modules/records/records.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const errorMiddleware = require('./middleware/error.middleware');
@@ -31,6 +32,7 @@ app.get('/health', (req, res) => {
 
 app.use('/docs', docsRoutes);
 app.use('/auth', authRoutes);
+app.use('/users', usersRoutes);
 app.use('/records', recordsRoutes);
 app.use('/dashboard', dashboardRoutes);
 

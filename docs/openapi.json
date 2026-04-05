@@ -3,7 +3,7 @@
   "info": {
     "title": "Finance Backend API",
     "version": "1.0.0",
-    "description": "Focused v1 API surface for the finance backend assignment."
+    "description": "Finance data processing and access control backend for the Zorvyn assignment."
   },
   "servers": [
     {
@@ -16,18 +16,11 @@
     }
   ],
   "tags": [
-    {
-      "name": "Health"
-    },
-    {
-      "name": "Auth"
-    },
-    {
-      "name": "Records"
-    },
-    {
-      "name": "Dashboard"
-    }
+    { "name": "Health" },
+    { "name": "Auth" },
+    { "name": "Users" },
+    { "name": "Records" },
+    { "name": "Dashboard" }
   ],
   "components": {
     "securitySchemes": {
@@ -42,14 +35,40 @@
         "type": "object",
         "required": ["email", "password"],
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "admin@finance.local"
+          "email": { "type": "string", "format": "email", "example": "admin@finance.local" },
+          "password": { "type": "string", "example": "Admin123!" }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": ["email", "fullName", "password", "roleCodes", "statusCode"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "new@finance.local" },
+          "fullName": { "type": "string", "example": "New User" },
+          "password": { "type": "string", "example": "NewUser123!" },
+          "roleCodes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["viewer"]
           },
-          "password": {
-            "type": "string",
-            "example": "Admin123!"
+          "statusCode": { "type": "string", "example": "active" }
+        }
+      },
+      "UpdateUserStatusRequest": {
+        "type": "object",
+        "required": ["statusCode"],
+        "properties": {
+          "statusCode": { "type": "string", "example": "inactive" }
+        }
+      },
+      "UpdateUserRolesRequest": {
+        "type": "object",
+        "required": ["roleCodes"],
+        "properties": {
+          "roleCodes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["analyst", "viewer"]
           }
         }
       },
@@ -57,79 +76,31 @@
         "type": "object",
         "required": ["amount", "categoryPublicId", "currencyCode", "occurredOn", "recordTypeCode"],
         "properties": {
-          "amount": {
-            "type": "number",
-            "example": 1200
-          },
-          "categoryPublicId": {
-            "type": "string",
-            "format": "uuid",
-            "example": "Use a value returned by GET /records/lookups"
-          },
-          "currencyCode": {
-            "type": "string",
-            "example": "INR"
-          },
-          "occurredOn": {
-            "type": "string",
-            "format": "date",
-            "example": "2026-04-01"
-          },
-          "recordTypeCode": {
-            "type": "string",
-            "example": "income"
-          },
-          "notes": {
-            "type": "string",
-            "example": "April salary"
-          }
+          "amount": { "type": "number", "example": 1200 },
+          "categoryPublicId": { "type": "string", "format": "uuid", "example": "Use a value from GET /records/lookups" },
+          "currencyCode": { "type": "string", "example": "INR" },
+          "occurredOn": { "type": "string", "format": "date", "example": "2026-04-01" },
+          "recordTypeCode": { "type": "string", "example": "income" },
+          "notes": { "type": "string", "example": "April salary" }
         }
       },
       "RecordUpdateRequest": {
         "type": "object",
         "properties": {
-          "amount": {
-            "type": "number",
-            "example": 1450
-          },
-          "categoryPublicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "currencyCode": {
-            "type": "string",
-            "example": "INR"
-          },
-          "occurredOn": {
-            "type": "string",
-            "format": "date",
-            "example": "2026-04-10"
-          },
-          "recordTypeCode": {
-            "type": "string",
-            "example": "income"
-          },
-          "notes": {
-            "type": "string",
-            "example": "Updated salary"
-          }
+          "amount": { "type": "number", "example": 1450 },
+          "categoryPublicId": { "type": "string", "format": "uuid" },
+          "currencyCode": { "type": "string", "example": "INR" },
+          "occurredOn": { "type": "string", "format": "date", "example": "2026-04-10" },
+          "recordTypeCode": { "type": "string", "example": "income" },
+          "notes": { "type": "string", "example": "Updated salary" }
         }
       },
       "ErrorResponse": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "example": false
-          },
-          "message": {
-            "type": "string",
-            "example": "Missing required permission: records.read."
-          },
-          "code": {
-            "type": "string",
-            "example": "FORBIDDEN"
-          }
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string", "example": "Validation failed." },
+          "code": { "type": "string", "example": "BAD_REQUEST" }
         }
       }
     }
@@ -139,11 +110,7 @@
       "get": {
         "tags": ["Health"],
         "summary": "Health check",
-        "responses": {
-          "200": {
-            "description": "Service is healthy"
-          }
-        }
+        "responses": { "200": { "description": "Service is healthy" } }
       }
     },
     "/auth/login": {
@@ -152,31 +119,81 @@
         "summary": "Authenticate and receive a JWT",
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
         },
         "responses": {
-          "200": {
-            "description": "Login successful"
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Inactive user"
-          }
+          "200": { "description": "Login successful" },
+          "400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "Invalid credentials" },
+          "403": { "description": "Inactive user" }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List users",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "roleCode", "in": "query", "schema": { "type": "string" } },
+          { "name": "statusCode", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Users fetched" },
+          "403": { "description": "Missing users.read permission" }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create a user",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUserRequest" } } }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Validation or business-rule error" },
+          "403": { "description": "Missing users.manage permission" }
+        }
+      }
+    },
+    "/users/{publicId}/status": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update a user's status",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "publicId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateUserStatusRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "User status updated" },
+          "403": { "description": "Missing users.manage permission" }
+        }
+      }
+    },
+    "/users/{publicId}/roles": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Assign or replace user roles",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "publicId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateUserRolesRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "User roles updated" },
+          "403": { "description": "Missing users.manage permission" }
         }
       }
     },
@@ -185,21 +202,11 @@
         "tags": ["Records"],
         "summary": "Fetch active record types and categories",
         "description": "Use this before POST or PATCH record requests because category public IDs are seed-time values.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "responses": {
-          "200": {
-            "description": "Record lookups fetched"
-          },
-          "401": {
-            "description": "Missing or invalid token"
-          },
-          "403": {
-            "description": "Missing records.read permission"
-          }
+          "200": { "description": "Record lookups fetched" },
+          "401": { "description": "Missing or invalid token" },
+          "403": { "description": "Missing records.read permission" }
         }
       }
     },
@@ -207,110 +214,31 @@
       "get": {
         "tags": ["Records"],
         "summary": "List records",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "recordTypeCode",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "categoryPublicId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "createdByPublicId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "startDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 20
-            }
-          },
-          {
-            "name": "includeDeleted",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          }
+          { "name": "recordTypeCode", "in": "query", "schema": { "type": "string" } },
+          { "name": "categoryPublicId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "createdByPublicId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } },
+          { "name": "includeDeleted", "in": "query", "schema": { "type": "boolean", "default": false } }
         ],
-        "responses": {
-          "200": {
-            "description": "Records fetched"
-          }
-        }
+        "responses": { "200": { "description": "Records fetched" } }
       },
       "post": {
         "tags": ["Records"],
         "summary": "Create a record",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecordWriteRequest"
-              }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecordWriteRequest" } } }
         },
         "responses": {
-          "201": {
-            "description": "Record created"
-          },
-          "400": {
-            "description": "Validation or business-rule error"
-          },
-          "403": {
-            "description": "Missing records.create permission"
-          }
+          "201": { "description": "Record created" },
+          "400": { "description": "Validation or business-rule error" },
+          "403": { "description": "Missing records.create permission" }
         }
       }
     },
@@ -318,124 +246,84 @@
       "get": {
         "tags": ["Records"],
         "summary": "Fetch one record",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "publicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "publicId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "responses": {
-          "200": {
-            "description": "Record fetched"
-          }
-        }
+        "responses": { "200": { "description": "Record fetched" } }
       },
       "patch": {
         "tags": ["Records"],
         "summary": "Update a record",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "publicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "publicId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
         "requestBody": {
           "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RecordUpdateRequest"
-              }
-            }
-          }
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RecordUpdateRequest" } } }
         },
-        "responses": {
-          "200": {
-            "description": "Record updated"
-          }
-        }
+        "responses": { "200": { "description": "Record updated" } }
       },
       "delete": {
         "tags": ["Records"],
         "summary": "Soft delete a record",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "publicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
+          { "name": "publicId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
         ],
-        "responses": {
-          "200": {
-            "description": "Record deleted"
-          }
-        }
+        "responses": { "200": { "description": "Record deleted" } }
       }
     },
     "/dashboard/summary": {
       "get": {
         "tags": ["Dashboard"],
-        "summary": "Return the focused dashboard summary",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
+        "summary": "Return dashboard summary totals",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
-          {
-            "name": "startDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          },
-          {
-            "name": "endDate",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          }
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } }
         ],
-        "responses": {
-          "200": {
-            "description": "Summary fetched"
-          },
-          "403": {
-            "description": "Missing dashboard.read permission"
-          }
-        }
+        "responses": { "200": { "description": "Summary fetched" } }
+      }
+    },
+    "/dashboard/category-totals": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Return totals grouped by category",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "recordTypeCode", "in": "query", "schema": { "type": "string" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": { "200": { "description": "Category totals fetched" } }
+      }
+    },
+    "/dashboard/trends": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Return weekly or monthly trends",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "granularity", "in": "query", "schema": { "type": "string", "enum": ["week", "month"], "default": "month" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": { "200": { "description": "Trend data fetched" } }
+      }
+    },
+    "/dashboard/recent-activity": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Return recent financial activity",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": { "200": { "description": "Recent activity fetched" } }
       }
     }
   }

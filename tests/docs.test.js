@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../src/app');
 
 describe('GET /docs', () => {
-  it('serves Swagger UI for the kept v1 surface only', async () => {
+  it('serves Swagger UI for the kept assignment surface', async () => {
     const pageResponse = await request(app).get('/docs/');
     const initResponse = await request(app).get('/docs/swagger-ui-init.js');
 
@@ -12,10 +12,12 @@ describe('GET /docs', () => {
 
     expect(initResponse.status).toBe(200);
     expect(initResponse.type).toMatch(/javascript/);
+    expect(initResponse.text).toContain('/users');
+    expect(initResponse.text).toContain('/users/{publicId}/status');
+    expect(initResponse.text).toContain('/users/{publicId}/roles');
+    expect(initResponse.text).toContain('/dashboard/category-totals');
+    expect(initResponse.text).toContain('/dashboard/trends');
+    expect(initResponse.text).toContain('/dashboard/recent-activity');
     expect(initResponse.text).toContain('/records/lookups');
-    expect(initResponse.text).toContain('/dashboard/summary');
-    expect(initResponse.text).not.toContain('/users');
-    expect(initResponse.text).not.toContain('/dashboard/trends');
-    expect(initResponse.text).not.toContain('/openapi.json');
   });
 });
