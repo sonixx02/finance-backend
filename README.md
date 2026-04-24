@@ -1,6 +1,6 @@
 # Finance Backend
 
-An Express and PostgreSQL backend for the Zorvyn finance dashboard assignment. The project focuses on clear backend structure, data modeling, role-based access control, validation, and dashboard aggregation APIs.
+An Express and PostgreSQL backend  The project focuses on clear backend structure, data modeling, role-based access control, validation, and dashboard aggregation APIs.
 
 ## What Is Included
 
