@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://finance-backend-mj67.onrender.com",
+      "url": "https://finance-backend-18qm.onrender.com",
       "description": "Production server"
     },
     {
