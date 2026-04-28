@@ -5,7 +5,8 @@ const logger = require('./logger');
 
 const pool = new Pool({
   connectionString: env.databaseUrl,
-  ssl: env.databaseSsl ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false },
+  family: 4
 });
 
 pool.on('error', (error) => {
